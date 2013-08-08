@@ -31,6 +31,10 @@ ADD_EXECUTABLE(yarp-config yarpconfig.cpp)
 TARGET_LINK_LIBRARIES(yarp-config YARP_OS YARP_init ${ACE_LIBRARIES})
 INSTALL(TARGETS yarp-config COMPONENT utilities DESTINATION bin)
 
-ADD_EXECUTABLE(yarp-context yarpcontext.cpp)
+ADD_EXECUTABLE(yarp-context yarpcontext.cpp yarpcontextutils.cpp yarpcontextutils.h)
 TARGET_LINK_LIBRARIES(yarp-context YARP_OS ${ACE_LIBRARIES})
 INSTALL(TARGETS yarp-context COMPONENT utilities DESTINATION bin)
+
+ADD_EXECUTABLE(yarp-robot yarprobot.cpp yarpcontextutils.cpp yarpcontextutils.h)
+TARGET_LINK_LIBRARIES(yarp-robot YARP_OS ${ACE_LIBRARIES})
+INSTALL(TARGETS yarp-robot COMPONENT utilities DESTINATION bin)
