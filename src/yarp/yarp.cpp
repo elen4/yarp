@@ -7,13 +7,16 @@
  *
  */
 
-
+#include <stdio.h>
 #include <yarp/os/Network.h>
 using namespace yarp::os;
 
 #if YARP_USE_PERSISTENT_NAMESERVER
 #  include <yarp/yarpserversql/yarpserversql.h>
 #endif
+
+#include "yarpcontext.h"
+#include "yarprobot.h"
 
 int main(int argc, char *argv[]) {
 #if YARP_USE_PERSISTENT_NAMESERVER
@@ -24,6 +27,20 @@ int main(int argc, char *argv[]) {
         }
     }
 #endif
+    if (argc>=2) {
+        if (ConstString(argv[1])=="context") {
+            return yarp_context_main(argc,argv);
+        }
+        if (ConstString(argv[1])=="robot") {
+            return yarp_robot_main(argc,argv);
+        }
+        if (ConstString(argv[1])=="help") {
+            Network::main(argc, argv);
+            printf("context      Manage context data\n");
+            printf("robot        Manage robot data\n");
+            return 0;
+        }
+    }
 
     // call the yarp standard companion
     Network yarp;
