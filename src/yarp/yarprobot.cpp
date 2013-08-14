@@ -117,15 +117,15 @@ int findCurrentRobot(bool verbose)
         return 0;
     }
 
+#if defined(WIN32)
+    printf("Could not determine which is the current robot as the current OS does not support symbolic links, please set the YARP_ROBOT_NAME environment variable to set the current robot\n");
+#else
     ConstString robotpath=rf.findPath((ConstString("robots") + PATH_SEPERATOR + "default").c_str());
     if (robotpath == "")
     {
         printf("Could not determine which is the current robot\n");
         return 0;
     }
-#if defined(WIN32)
-    printf("Could not determine which is the current robot as the current OS does not support symbolic links, please set the YARP_ROBOT_NAME environment variable to set the current robot\n");
-#else
     std::string realrobotname= readlink_malloc(robotpath.c_str());
     if (realrobotname != "")
     {
@@ -147,7 +147,11 @@ int makeCurrentRobot(std::string robotName, bool verbose)
             if (result != NULL)
             {
                 printf("YARP_ROBOT_NAME environment variable is set to %s, which identifies the current robot\n", result);
+#ifdef WIN32
+                printf("Please modify the environment variable to change the current robot");
+#else
                 printf("Please unset it if you want to change the current robot with 'yarp robot'");
+#endif
                 return 0;
             }
 #if defined(WIN32)
@@ -230,7 +234,7 @@ int importSymLinkToHome(bool verbose)
     return 1;
 }
 
-void show_help() {
+void show_yarprobot_help() {
     printf("Usage: yarp-robot [OPTION]\n\n");
     printf("Known values for OPTION are:\n\n");
     printf("  --help       display this help and exit\n");
@@ -247,11 +251,11 @@ void show_help() {
 
 }
 
-int main(int argc, char *argv[]) {
+int yarp_robot_main(int argc, char *argv[]) {
     yarp::os::Property options;
     options.fromCommand(argc,argv);
     if (options.check("help")) {
-        show_help();
+        show_yarprobot_help();
         return 0;
     }
     if (options.check("list")) {
@@ -441,7 +445,7 @@ int main(int argc, char *argv[]) {
         printf("Not implemented yet\n");
         return 0;
     }
-    show_help();
+    show_yarprobot_help();
     return 1;
 }
 

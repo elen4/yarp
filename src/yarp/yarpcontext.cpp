@@ -232,7 +232,7 @@ void show_help() {
 
 }
 
-int main(int argc, char *argv[]) {
+int yarp_context_main(int argc, char *argv[]) {
     yarp::os::Property options;
     options.fromCommand(argc,argv);
     if (options.check("help")) {

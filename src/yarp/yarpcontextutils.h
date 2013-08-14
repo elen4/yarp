@@ -4,6 +4,8 @@
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
+#ifndef YARPCONTEXTUTILS_H
+#define YARPCONTEXTUTILS_H
 
 #include <yarp/os/ConstString.h>
 #include <yarp/os/ResourceFinder.h>
@@ -22,3 +24,6 @@ void printUserFolders(yarp::os::ResourceFinder &rf, folderType ftype);
 void printSysadmFolders(yarp::os::ResourceFinder &rf, folderType ftype);
 void printInstalledFolders(yarp::os::ResourceFinder &rf, folderType ftype);
 void prepareHomeFolder(yarp::os::ResourceFinder &rf, folderType ftype);
+
+#endif
+

@@ -15,12 +15,21 @@ using namespace yarp::os;
 #  include <yarp/yarpserversql/yarpserversql.h>
 #endif
 
+#include "yarpcontext.h"
+#include "yarprobot.h"
+
 int main(int argc, char *argv[]) {
 #if YARP_USE_PERSISTENT_NAMESERVER
     // intercept "yarp server" if needed
     if (argc>=2) {
         if (ConstString(argv[1])=="server") {
             return yarpserver3_main(argc,argv);
+        }
+        if (ConstString(argv[1])=="context") {
+            return yarp_context_main(argc,argv);
+        }
+        if (ConstString(argv[1])=="robot") {
+            return yarp_robot_main(argc,argv);
         }
     }
 #endif
