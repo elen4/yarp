@@ -82,6 +82,7 @@ std::string extractPath(const std::string& fullpath)
 
 bool removeSymLinkFor(std::string robotPath, bool force=false) 
 {
+#ifndef WIN32
     //force should be true if the symlink should be removed even when it points to a different robot than robotname
     std::string dirPath=extractPath(robotPath);
     std::string defaultPath=dirPath + PATH_SEPERATOR + "default";
@@ -97,6 +98,7 @@ bool removeSymLinkFor(std::string robotPath, bool force=false)
         if (robotPath == defaultPath || realpath==robotPath)
             return !YARP_unlink(defaultPath.c_str());
     }
+#endif
     return false;
 }
 
@@ -208,6 +210,7 @@ int import(std::string robotName, bool verbose)
 
 int importSymLinkToHome(bool verbose)
 {
+#ifndef WIN32
     ResourceFinderOptions opts;
     opts.searchLocations=ResourceFinderOptions::Installed;
     yarp::os::ResourceFinder rf;
@@ -223,6 +226,8 @@ int importSymLinkToHome(bool verbose)
         import(robotName, verbose);
 
     return makeCurrentRobot(robotName, verbose);
+#endif
+    return 1;
 }
 
 void show_help() {
