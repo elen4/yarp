@@ -7,7 +7,7 @@
  *
  */
 
-
+#include <stdio.h>
 #include <yarp/os/Network.h>
 using namespace yarp::os;
 
@@ -25,14 +25,22 @@ int main(int argc, char *argv[]) {
         if (ConstString(argv[1])=="server") {
             return yarpserver3_main(argc,argv);
         }
+    }
+#endif
+    if (argc>=2) {
         if (ConstString(argv[1])=="context") {
             return yarp_context_main(argc,argv);
         }
         if (ConstString(argv[1])=="robot") {
             return yarp_robot_main(argc,argv);
         }
+        if (ConstString(argv[1])=="help") {
+            Network::main(argc, argv);
+            printf("context      Manage context data\n");
+            printf("robot        Manage robot data\n");
+            return 0;
+        }
     }
-#endif
 
     // call the yarp standard companion
     Network yarp;
