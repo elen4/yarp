@@ -337,6 +337,8 @@ endif ()
 add_library(YARP_OS ${YARP_OS_SRCS} ${YARP_OS_HDRS} ${YARP_OS_IDL_HDRS} ${YARP_OS_IMPL_HDRS})
 target_link_libraries(YARP_OS LINK_PRIVATE ${ACE_LIBRARIES})
 
+set_target_properties(YARP_OS PROPERTIES COMPILE_FLAGS "-fPIC")
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(YARP_OS LINK_PRIVATE pthread)
 endif()

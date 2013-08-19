@@ -10,28 +10,29 @@
 #include <stdio.h>
 #include <yarp/os/all.h>
 
-#include <yarp/os/impl/Carrier.h>
-#include <yarp/os/impl/Carriers.h>
-#include <yarp/os/impl/String.h>
-#include <yarp/os/Bytes.h>
-#include <yarp/os/ManagedBytes.h>
-#include <yarp/os/impl/NetType.h>
-#include <yarp/os/impl/Protocol.h>
+#include <yarp/os/Carrier.h>
+// #include <yarp/os/impl/Carrier.h>
+// #include <yarp/os/impl/Carriers.h>
+// #include <yarp/os/impl/String.h>
+// #include <yarp/os/Bytes.h>
+// #include <yarp/os/ManagedBytes.h>
+// #include <yarp/os/impl/NetType.h>
+// #include <yarp/os/impl/Protocol.h>
 
 #include <iostream>
 #include <string>
 
-using namespace std;
-using namespace yarp::os;
-using namespace yarp::os::impl;
+// using namespace std;
+// using namespace yarp::os;
+//using namespace yarp::os::impl;
 
 
-class XXXStream : public TwoWayStream, public InputStream, public OutputStream {
+class XXXStream : public yarp::os::TwoWayStream, public yarp::os::InputStream, public yarp::os::OutputStream {
 private:
     bool interrupting;
     bool needInterrupt;
-    string inputCache;
-    string outputCache;
+    std::string inputCache;
+    std::string outputCache;
 public:
     XXXStream() {
         interrupting = false;
@@ -40,7 +41,7 @@ public:
     }
 
     virtual void close() {
-        cout << "Bye bye" << endl;
+        std::cout << "Bye bye" << std::endl;
     }
 
     virtual bool isOk() {
@@ -50,56 +51,56 @@ public:
     virtual void interrupt() {
         interrupting = true;
         while (needInterrupt) {
-            cout << "*** INTERRUPT: Please hit enter ***" << endl;
+            std::cout << "*** INTERRUPT: Please hit enter ***" << std::endl;
             for (int i=0; i<10 && needInterrupt; i++) {
-                Time::delay(0.1);
+                yarp::os::Time::delay(0.1);
             }
         }
     }
 
     // InputStream
 
-    virtual ssize_t read(const Bytes& b);
+    virtual ssize_t read(const yarp::os::Bytes& b);
 
     // OutputStream
 
-    virtual void write(const Bytes& b);
+    virtual void write(const yarp::os::Bytes& b);
 
     // TwoWayStream
 
-    virtual InputStream& getInputStream() {
+    virtual yarp::os::InputStream& getInputStream() {
         return *this;
     }
 
-    virtual OutputStream& getOutputStream() {
+    virtual yarp::os::OutputStream& getOutputStream() {
         return *this;
     }
 
-    virtual const Address& getLocalAddress() {
+    virtual const yarp::os::Contact& getLocalAddress() {
         // left undefined
         return local;
     }
 
-    virtual const Address& getRemoteAddress() {
+    virtual const yarp::os::Contact& getRemoteAddress() {
         // left undefined
         return remote;
     }
 
     virtual void reset() {
         inputCache = outputCache = "";
-        cout << "Stream reset" << endl;
+        std::cout << "Stream reset" << std::endl;
     }
 
     virtual void beginPacket() {
-        cout << "Packet begins" << endl;
+        std::cout << "Packet begins" << std::endl;
         inputCache = "";
         outputCache = "";
     }
 
     virtual void endPacket() {
-        cout << "Packet ends" << endl;
+        std::cout << "Packet ends" << std::endl;
     }
 
 private:
-    Address local, remote;
+    yarp::os::Contact local, remote;
 };

@@ -19,8 +19,9 @@ endmacro(YARP_ADD_CARRIER_FINGERPRINT)
 set(XXX_HDRS XXXCarrier.h XXXStream.h)
 set(XXX_SRCS XXXCarrier.cpp XXXStream.cpp)
 
-add_library(yarp_xxx MODULE ${XXX_SRCS})
-
+#add_library(yarp_xxx MODULE ${XXX_SRCS})
+add_library(yarp_xxx SHARED ${XXX_SRCS} ${XXX_HDRS})
+set_target_properties(yarp_xxx PROPERTIES COMPILE_FLAGS "-fPIC")
 install(TARGETS yarp_xxx
         COMPONENT runtime
         DESTINATION lib)

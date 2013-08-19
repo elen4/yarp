@@ -7,10 +7,12 @@
  *
  */
 
+#include <yarp/os/ManagedBytes.h>
 #include "XXXCarrier.h"
 #include <yarp/os/SharedLibraryClass.h>
 
-bool XXXCarrier::sendHeader(Protocol& proto) {
+using namespace yarp::os;
+bool XXXCarrier::sendHeader(ConnectionState& proto) {
     // Send the "magic number" for this carrier
     ManagedBytes header(8);
     getHeader(header.bytes());
@@ -22,7 +24,7 @@ bool XXXCarrier::sendHeader(Protocol& proto) {
 
     // let's just send the port name in plain text terminated with a
     // carriage-return / line-feed
-    String from = proto.getRoute().getFromName();
+    ConstString from = proto.getRoute().getFromName();
     Bytes b2((char*)from.c_str(),from.length());
     proto.os().write(b2);
     proto.os().write('\r');
