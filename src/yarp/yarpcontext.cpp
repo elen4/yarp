@@ -14,7 +14,6 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Os.h>
 #include <yarp/os/impl/PlatformStdlib.h>
-#include <stdio.h>
 #include <errno.h>
 
 #include "yarpcontextutils.h"
@@ -398,12 +397,51 @@ int yarp_context_main(int argc, char *argv[]) {
     }
     if(options.check("diff"))
     {
-        printf("Not implemented yet\n");
+        ConstString contextName=options.find("diff").asString().c_str();
+        if (contextName=="")
+        {
+            printf("No context name provided\n");
+            return 0;
+        }
+        yarp::os::ResourceFinder rf;
+        if (options.check("verbose"))
+            rf.setVerbose(true);
+
+        ResourceFinderOptions opts;
+        opts.searchLocations=ResourceFinderOptions::User;
+        ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+
+        opts.searchLocations=ResourceFinderOptions::Installed;
+        ConstString installedPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+
+        recursiveDiff(installedPath, userPath);
         return 0;
     }
     if(options.check("diff-list"))
     {
-        printf("Not implemented yet\n");
+        yarp::os::ResourceFinder rf;
+        if (options.check("verbose"))
+            rf.setVerbose(true);
+        ResourceFinderOptions opts;
+        opts.searchLocations=ResourceFinderOptions::Installed;
+        Bottle installedPaths=rf.findPaths(ConstString("contexts").c_str(), opts);
+        for(int n=0; n <installedPaths.size(); ++n)
+        {
+            std::string installedPath=installedPaths.get(n).asString();
+            std::vector<std::string> subDirs=listContentDirs(installedPath);
+            for (std::vector<std::string>::iterator subDirIt= subDirs.begin(); subDirIt!=subDirs.end(); ++subDirIt)
+            {
+                ostream tmp(0);
+                opts.searchLocations=ResourceFinderOptions::User;
+                rf.setQuiet();
+                ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +(*subDirIt)).c_str(), opts);
+                if (userPath == "")
+                    continue;
+                if ( recursiveDiff(installedPath + PATH_SEPERATOR + (*subDirIt), userPath, tmp)>0)
+                    std::cout<< (*subDirIt) <<std::endl;
+            }
+        }
+
         return 0;
     }
     if(options.check("merge"))
