@@ -19,15 +19,18 @@
 #endif
 
 enum folderType{CONTEXTS=0, ROBOTS=1};
+bool fileCopy(yarp::os::ConstString srcFileName, yarp::os::ConstString destFileName);
 int recursiveCopy(yarp::os::ConstString srcDirName, yarp::os::ConstString destDirName);
 int recursiveRemove(yarp::os::ConstString dirName);
 std::vector<std::string> listContentDirs(const yarp::os::ConstString &curPath);
+std::vector<std::string> listContentFiles(const yarp::os::ConstString &curPath);
 void printContentDirs(const yarp::os::ConstString &curPath);
 void printUserFolders(yarp::os::ResourceFinder &rf, folderType ftype);
 void printSysadmFolders(yarp::os::ResourceFinder &rf, folderType ftype);
 void printInstalledFolders(yarp::os::ResourceFinder &rf, folderType ftype);
 void prepareHomeFolder(yarp::os::ResourceFinder &rf, folderType ftype);
 int recursiveDiff(yarp::os::ConstString srcDirName, yarp::os::ConstString destDirName, std::ostream &output=std::cout);
-
+int fileMerge(yarp::os::ConstString srcFileName, yarp::os::ConstString destFileName, yarp::os::ConstString commonParentName);
+int recursiveMerge(yarp::os::ConstString srcDirName, yarp::os::ConstString destDirName, yarp::os::ConstString commonParentName, std::ostream &output=std::cout);
 #endif
 

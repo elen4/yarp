@@ -220,13 +220,14 @@ void show_help() {
     printf("Known values for OPTION are:\n\n");
     printf("  --help       display this help and exit\n");
     printf("  --list  list contexts that are available; add optional '--user', '--sysadm' or '--installed' parameters to limit the search locations\n");
-    printf("  --import <context_name>  import specified context to home directory\n");
+//    printf("  --show <context-name>  show files that make up a context, and the location of each\n");
+    printf("  --import <context_name> file1 file2 import specified context files to home directory\n");
     printf("  --import-all import all contexts to home directory\n");
     printf("  --remove  <context_name>  remove specified context from home directory\n");
     printf("  --diff  <context_name>  find differences from the context in the home directory with respect to the installation directory\n");
     printf("  --diff-list  list the contexts in the home directory that are different from the installation directory\n");
-    printf("  --where  <context_name>  print full paths to the contexts that are found for <context_name> (the first one is the default one)\n");
-    printf("  --merge  <context_name>  merge differences\n");
+    //printf("  --where  <context_name>  print full paths to the contexts that are found for <context_name> (the first one is the default one)\n");
+    printf("  --merge  <context_name>  file1 file2 ... merge differences in selected files-directories\n");
     printf("\n");
 
 }
@@ -262,7 +263,10 @@ int yarp_context_main(int argc, char *argv[]) {
 
     if(options.check("import"))
     {
-        ConstString contextName=options.find("import").asString().c_str();
+        Bottle importArg=options.findGroup("import");
+        ConstString contextName;
+        if (importArg.size() >1 )
+            contextName=importArg.get(1).asString().c_str();
         if (contextName=="")
         {
             printf("No context name provided\n");
@@ -275,20 +279,52 @@ int yarp_context_main(int argc, char *argv[]) {
         opts.searchLocations=ResourceFinderOptions::Installed;
         ConstString originalpath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
         ConstString destDirname=rf.getDataHome() + PATH_SEPERATOR + "contexts" + PATH_SEPERATOR + contextName;
-
+        //tmp:
+        ConstString hiddenDirname=rf.getDataHome() + PATH_SEPERATOR + ".contexts" + PATH_SEPERATOR + contextName;
         prepareHomeFolder(rf, CONTEXTS);
+        if (importArg.size() >2 )
+        {
 
-        int result= recursiveCopy(originalpath, destDirname);
-        if (result < 0)
-            printf("ERRORS OCCURRED WHILE IMPORTING CONTEXT %s\n", contextName.c_str());
+            yarp::os::mkdir((destDirname).c_str());
+            yarp::os::mkdir((hiddenDirname).c_str());
+            bool ok=true;
+            for (int i=2; i<importArg.size(); ++i)
+            {
+                ConstString fileName=importArg.get(i).asString();
+                if(fileName != "")
+                {
+                    ok = (recursiveCopy(originalpath+ PATH_SEPERATOR + fileName, destDirname + PATH_SEPERATOR + fileName) >=0 ) && ok;
+                    ok = ok && (recursiveCopy(originalpath+ PATH_SEPERATOR + fileName, hiddenDirname + PATH_SEPERATOR + fileName) >=0 );
+                }
+            }
+            if (ok)
+            {
+                printf("Copied selected files to %s\n", destDirname.c_str());
+                return 0;
+            }
+            else
+            {
+                printf("ERRORS OCCURRED WHILE IMPORTING FILES FOR CONTEXT %s\n", contextName.c_str());
+                return 1;
+            }
+        }
         else
         {
-            printf("Copied context %s from %s to %s .\nCurrent locations for this context:\n", contextName.c_str(), originalpath.c_str(), destDirname.c_str());
-            yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str());
-            for (int curCont=0; curCont<paths.size(); ++curCont)
-                printf("%s\n", paths.get(curCont).asString().c_str());
+
+            int result= recursiveCopy(originalpath, destDirname);
+            recursiveCopy(originalpath, hiddenDirname);
+
+            if (result < 0)
+                printf("ERRORS OCCURRED WHILE IMPORTING CONTEXT %s\n", contextName.c_str());
+            else
+            {
+                printf("Copied context %s from %s to %s .\nCurrent locations for this context:\n", contextName.c_str(), originalpath.c_str(), destDirname.c_str());
+                yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str());
+                for (int curCont=0; curCont<paths.size(); ++curCont)
+                    printf("%s\n", paths.get(curCont).asString().c_str());
+            }
+            return result;
         }
-        return result;
     }
 
     if(options.check("import-all"))
@@ -324,7 +360,9 @@ int yarp_context_main(int argc, char *argv[]) {
                     if ((statbuf.st_mode & S_IFMT)== S_IFDIR)
                     {
                         ConstString destDirname=rf.getDataHome() + PATH_SEPERATOR + "contexts" + PATH_SEPERATOR + name;
-                        recursiveCopy(originalpath, destDirname);// TODO: check result!
+                        recursiveCopy(originalpath, destDirname);
+                        ConstString hiddenDirname=rf.getDataHome() + PATH_SEPERATOR + ".contexts" + PATH_SEPERATOR + name;
+                        recursiveCopy(originalpath, hiddenDirname);// TODO: check result!
                     }
                 }
                 free(namelist[i]);
@@ -369,6 +407,10 @@ int yarp_context_main(int argc, char *argv[]) {
                     printf("ERRORS OCCURRED WHILE REMOVING %s\n", targetPath.c_str());
                 else
                     printf("Removed folder %s\n", targetPath.c_str());
+                //remove hidden folder:
+                ConstString hiddenPath=   rf.findPath((ConstString(".contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+                if (hiddenPath != "")
+                    recursiveRemove(hiddenPath.c_str());
                 return result;
             }
             else
@@ -395,6 +437,29 @@ int yarp_context_main(int argc, char *argv[]) {
             printf("%s\n", paths.get(curCont).asString().c_str());
         return 0;
     }
+
+//         if(options.check("show"))
+//     {
+//         ConstString contextName=options.find("show").asString().c_str();
+//         if (contextName=="")
+//         {
+//             printf("No context name provided\n");
+//             return 0;
+//         }
+//         yarp::os::ResourceFinder rf;
+//         if (options.check("verbose"))
+//             rf.setVerbose(true);
+//         yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str());
+//         std::vector<std::string> fileList;
+//         for (int curCont=0; curCont<paths.size(); ++curCont)
+//         {
+//             std::vector<std::string> newList;
+//             fileList.resize(fileList.size()+);
+//         }
+//             printf("%s\n", paths.get(curCont).asString().c_str());
+//         return 0;
+//     }
+
     if(options.check("diff"))
     {
         ConstString contextName=options.find("diff").asString().c_str();
@@ -446,7 +511,57 @@ int yarp_context_main(int argc, char *argv[]) {
     }
     if(options.check("merge"))
     {
-        printf("Not implemented yet\n");
+        Bottle mergeArg=options.findGroup("merge");
+        ConstString contextName;
+        if (mergeArg.size() >1 )
+            contextName=mergeArg.get(1).asString().c_str();
+        if (contextName=="")
+        {
+            printf("No context name provided\n");
+            return 0;
+        }
+        yarp::os::ResourceFinder rf;
+        if (options.check("verbose"))
+            rf.setVerbose(true);
+
+        if (mergeArg.size() >2 )
+        {
+            for (int i=2; i<mergeArg.size(); ++i)
+            {
+                ConstString fileName=mergeArg.get(i).asString();
+                if(fileName != "")
+                {
+                    ResourceFinderOptions opts;
+                    opts.searchLocations=ResourceFinderOptions::User;
+                    ConstString userFileName=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName + PATH_SEPERATOR + fileName).c_str(), opts);
+
+                    ConstString hiddenFileName=rf.findPath((ConstString(".contexts") + PATH_SEPERATOR +contextName+ PATH_SEPERATOR + fileName).c_str(), opts);
+
+                    opts.searchLocations=ResourceFinderOptions::Installed;
+                    ConstString installedFileName=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName+ PATH_SEPERATOR + fileName).c_str(), opts);
+
+                    if (userFileName!="" && hiddenFileName != "" && installedFileName !="")
+                        fileMerge(installedFileName, userFileName, hiddenFileName);
+                    else if (userFileName!=""  && installedFileName !="")
+                        printf("Need to use mergetool\n");
+                    else
+                        printf("Could not merge file %s\n", fileName.c_str());
+                }
+            }
+        }
+        else
+        {
+            ResourceFinderOptions opts;
+            opts.searchLocations=ResourceFinderOptions::User;
+            ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+
+            ConstString hiddenUserPath=rf.findPath((ConstString(".contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+
+            opts.searchLocations=ResourceFinderOptions::Installed;
+            ConstString installedPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+
+            recursiveMerge(installedPath, userPath, hiddenUserPath);
+        }
         return 0;
     }
     show_help();
