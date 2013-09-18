@@ -10,12 +10,13 @@
 #include <yarp/os/ConstString.h>
 #include <yarp/os/ResourceFinder.h>
 #include <iostream>
-#include "diff_match_patch.h"
+#include <vector>
+#include <string>
 
 #if defined(WIN32)
-    #define PATH_SEPERATOR      "\\"
+    #define PATH_SEPARATOR      "\\"
 #else
-    #define PATH_SEPERATOR      "/"
+    #define PATH_SEPARATOR      "/"
 #endif
 
 enum folderType{CONTEXTS=0, ROBOTS=1};

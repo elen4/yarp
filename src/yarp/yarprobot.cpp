@@ -21,9 +21,9 @@
 #include "yarpcontextutils.h"
 
 #if defined(WIN32)
-    #define PATH_SEPERATOR      "\\"
+    #define PATH_SEPARATOR      "\\"
 #else
-    #define PATH_SEPERATOR      "/"
+    #define PATH_SEPARATOR      "/"
 #endif
 
 using namespace yarp::os;
@@ -85,7 +85,7 @@ bool removeSymLinkFor(std::string robotPath, bool force=false)
 #ifndef WIN32
     //force should be true if the symlink should be removed even when it points to a different robot than robotname
     std::string dirPath=extractPath(robotPath);
-    std::string defaultPath=dirPath + PATH_SEPERATOR + "default";
+    std::string defaultPath=dirPath + PATH_SEPARATOR + "default";
     printf("dirpath: %s defPath %s\n", dirPath.c_str() , defaultPath.c_str() );
     if (force)
     {
@@ -111,7 +111,7 @@ int findCurrentRobot(bool verbose)
     const char *result = ACE_OS::getenv("YARP_ROBOT_NAME");
     if (result != NULL)
     {
-        ConstString robotpath = rf.findPath(ConstString("robots") + PATH_SEPERATOR + ConstString(result));
+        ConstString robotpath = rf.findPath(ConstString("robots") + PATH_SEPARATOR + ConstString(result));
         printf("Current robot is %s, identified by the environment variable YARP_ROBOT_NAME\n", result);
         printf("Robot location: %s\n", robotpath.c_str());
         return 0;
@@ -120,7 +120,7 @@ int findCurrentRobot(bool verbose)
 #if defined(WIN32)
     printf("Could not determine which is the current robot as the current OS does not support symbolic links, please set the YARP_ROBOT_NAME environment variable to set the current robot\n");
 #else
-    ConstString robotpath=rf.findPath((ConstString("robots") + PATH_SEPERATOR + "default").c_str());
+    ConstString robotpath=rf.findPath((ConstString("robots") + PATH_SEPARATOR + "default").c_str());
     if (robotpath == "")
     {
         printf("Could not determine which is the current robot\n");
@@ -163,14 +163,14 @@ int makeCurrentRobot(std::string robotName, bool verbose)
                 rf.setVerbose(true);
 //                         ResourceFinderOptions opts;
 //             opts.searchLocations=ResourceFinderOptions::User;
-            ConstString robotpath=rf.findPath((ConstString("robots") + PATH_SEPERATOR + robotName).c_str()/*, opts*/);
+            ConstString robotpath=rf.findPath((ConstString("robots") + PATH_SEPARATOR + robotName).c_str()/*, opts*/);
             if (robotpath=="")
             {
                 printf("ERROR: Could not find a directory for robot %s\n", robotName.c_str());
                 return 0;
             }
              std::string dirPath=extractPath(robotpath);
-             std::string defaultPath=dirPath + PATH_SEPERATOR + "default";
+             std::string defaultPath=dirPath + PATH_SEPARATOR + "default";
 //             YARP_unlink(defaultPath);
             removeSymLinkFor(robotpath, true);
             int notok=symlink (robotpath.c_str(), defaultPath.c_str());
@@ -193,8 +193,8 @@ int import(std::string robotName, bool verbose)
         rf.setVerbose(true);
     ResourceFinderOptions opts;
     opts.searchLocations=ResourceFinderOptions::Installed;
-    ConstString originalpath=rf.findPath((ConstString("robots") + PATH_SEPERATOR +robotName).c_str(), opts);
-    ConstString destDirname=rf.getDataHome() + PATH_SEPERATOR + "robots" + PATH_SEPERATOR + robotName;
+    ConstString originalpath=rf.findPath((ConstString("robots") + PATH_SEPARATOR +robotName).c_str(), opts);
+    ConstString destDirname=rf.getDataHome() + PATH_SEPARATOR + "robots" + PATH_SEPARATOR + robotName;
 
     prepareHomeFolder(rf, ROBOTS);
 
@@ -204,7 +204,7 @@ int import(std::string robotName, bool verbose)
     else
     {
         printf("Copied directory for robot %s from %s to %s .\nCurrent locations for this robot:\n", robotName.c_str(), originalpath.c_str(), destDirname.c_str());
-        yarp::os::Bottle paths=rf.findPaths((ConstString("robots") + PATH_SEPERATOR +robotName).c_str());
+        yarp::os::Bottle paths=rf.findPaths((ConstString("robots") + PATH_SEPARATOR +robotName).c_str());
         for (int curCont=0; curCont<paths.size(); ++curCont)
             printf("%s\n", paths.get(curCont).asString().c_str());
     }
@@ -221,12 +221,12 @@ int importSymLinkToHome(bool verbose)
     if (verbose)
         rf.setVerbose(true);
 
-    ConstString defaultPath=rf.findPath(std::string("robots") + PATH_SEPERATOR + "default", opts);
+    ConstString defaultPath=rf.findPath(std::string("robots") + PATH_SEPARATOR + "default", opts);
     std::string realDefaultPath=readlink_malloc(defaultPath.c_str());
     std::string robotName= extractRobotNameFromPath(realDefaultPath);
 
     opts.searchLocations=ResourceFinderOptions::User;
-    if (rf.findPath(std::string("robots") + PATH_SEPERATOR + robotName, opts) == "")
+    if (rf.findPath(std::string("robots") + PATH_SEPARATOR + robotName, opts) == "")
         import(robotName, verbose);
 
     return makeCurrentRobot(robotName, verbose);
@@ -341,11 +341,11 @@ int yarp_robot_main(int argc, char *argv[]) {
                 if( name != "." && name != ".." && name !="default")
                 {
                     ACE_stat statbuf;
-                    ConstString originalpath=curPath + PATH_SEPERATOR + name;
+                    ConstString originalpath=curPath + PATH_SEPARATOR + name;
                     YARP_stat(originalpath.c_str(), &statbuf);
                     if ((statbuf.st_mode & S_IFMT)== S_IFDIR)
                     {
-                        ConstString destDirname=rf.getDataHome() + PATH_SEPERATOR + "robots" + PATH_SEPERATOR + name;
+                        ConstString destDirname=rf.getDataHome() + PATH_SEPARATOR + "robots" + PATH_SEPARATOR + name;
                         recursiveCopy(originalpath, destDirname);// TODO: check result!
                     }
                 }
@@ -355,7 +355,7 @@ int yarp_robot_main(int argc, char *argv[]) {
         }
 
 
-//         ConstString defaultPath=rf.findPath(std::string("robots") + PATH_SEPERATOR + "default");
+//         ConstString defaultPath=rf.findPath(std::string("robots") + PATH_SEPARATOR + "default");
 //         std::string realDefaultPath=readlink_malloc(defaultPath.c_str());
 //         std::string robotName= extractRobotNameFromPath(realDefaultPath);
 //
@@ -363,7 +363,7 @@ int yarp_robot_main(int argc, char *argv[]) {
 //         makeCurrentRobot(options);
         importSymLinkToHome(verbose);
         printf("New user robots:\n");
-        printContentDirs(rf.getDataHome() + PATH_SEPERATOR + "robots");
+        printContentDirs(rf.getDataHome() + PATH_SEPARATOR + "robots");
         return 0;
     }
 
@@ -381,7 +381,7 @@ int yarp_robot_main(int argc, char *argv[]) {
             rf.setVerbose(true);
         ResourceFinderOptions opts;
         opts.searchLocations=ResourceFinderOptions::User;
-        ConstString targetPath=rf.findPath((ConstString("robots") + PATH_SEPERATOR +contextName).c_str(), opts);
+        ConstString targetPath=rf.findPath((ConstString("robots") + PATH_SEPARATOR +contextName).c_str(), opts);
         if (targetPath=="")
         {
             printf("Could not find robot %s !\n", contextName.c_str());
@@ -425,7 +425,7 @@ int yarp_robot_main(int argc, char *argv[]) {
         yarp::os::ResourceFinder rf;
         if (options.check("verbose"))
             rf.setVerbose(true);
-        yarp::os::Bottle paths=rf.findPaths((ConstString("robots") + PATH_SEPERATOR +contextName).c_str());
+        yarp::os::Bottle paths=rf.findPaths((ConstString("robots") + PATH_SEPARATOR +contextName).c_str());
         for (int curCont=0; curCont<paths.size(); ++curCont)
             printf("%s\n", paths.get(curCont).asString().c_str());
         return 0;

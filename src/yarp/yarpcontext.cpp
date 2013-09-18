@@ -17,11 +17,12 @@
 #include <errno.h>
 
 #include "yarpcontextutils.h"
+#include <vector>
 
 #if defined(WIN32)
-    #define PATH_SEPERATOR      "\\"
+    #define PATH_SEPARATOR      "\\"
 #else
-    #define PATH_SEPERATOR      "/"
+    #define PATH_SEPARATOR      "/"
 #endif
 
 using namespace yarp::os;
@@ -51,12 +52,12 @@ using namespace yarp::os;
 // 
 //         if( name != "." && name != "..")
 //         {
-//             ConstString srcPath=srcDirName + PATH_SEPERATOR + name;
+//             ConstString srcPath=srcDirName + PATH_SEPARATOR + name;
 //             ACE_stat statbuf;
 //             if( YARP_stat(srcPath.c_str(), &statbuf) ==-1)
 //                 printf("Error in checking properties for %s\n", srcPath.c_str());
 //             if ((statbuf.st_mode & S_IFMT)== S_IFDIR)
-//                 recursiveCopy(srcPath, destDirName + PATH_SEPERATOR + name);
+//                 recursiveCopy(srcPath, destDirName + PATH_SEPARATOR + name);
 //             if ((statbuf.st_mode & S_IFMT)== S_IFREG)
 //             {
 //                 char buf[BUFSIZ];
@@ -69,11 +70,11 @@ using namespace yarp::os;
 //                     printf("Could not open source file %s\n", srcPath.c_str());
 //                     continue;
 //                 }
-//                 FILE* dest = fopen((destDirName + PATH_SEPERATOR + name).c_str(), "wb");
+//                 FILE* dest = fopen((destDirName + PATH_SEPARATOR + name).c_str(), "wb");
 //                 if(dest ==NULL)
 //                 {
 //                     ok=false;
-//                     printf("Could not open target file %s\n",(destDirName + PATH_SEPERATOR + name).c_str());
+//                     printf("Could not open target file %s\n",(destDirName + PATH_SEPARATOR + name).c_str());
 //                     fclose(source);
 //                     continue;
 //                 }
@@ -109,7 +110,7 @@ using namespace yarp::os;
 //     for (int i=0; i<n; i++)
 //     {
 //         ConstString name = namelist[i]->d_name;
-//         ConstString path=dirName + PATH_SEPERATOR + name;
+//         ConstString path=dirName + PATH_SEPARATOR + name;
 //         if( name != "." && name != "..")
 //         {
 //             ACE_stat statbuf;
@@ -142,7 +143,7 @@ using namespace yarp::os;
 //         if( name != "." && name != "..")
 //         {
 //             ACE_stat statbuf;
-//             ConstString path=curPath + PATH_SEPERATOR + name;
+//             ConstString path=curPath + PATH_SEPARATOR + name;
 //             if (YARP_stat(path.c_str(), &statbuf) == -1)
 //                 printf("Error in checking properties for %s\n", path.c_str());
 // 
@@ -205,12 +206,12 @@ using namespace yarp::os;
 //         yarp::os::mkdir((rf.getDataHome()).c_str());
 //     }
 // 
-//     dir= YARP_opendir((rf.getDataHome() + PATH_SEPERATOR + "contexts").c_str());
+//     dir= YARP_opendir((rf.getDataHome() + PATH_SEPARATOR + "contexts").c_str());
 //     if (dir!=NULL)
 //         YARP_closedir(dir);
 //     else
 //     {
-//         yarp::os::mkdir((rf.getDataHome() + PATH_SEPERATOR + "contexts").c_str());
+//         yarp::os::mkdir((rf.getDataHome() + PATH_SEPARATOR + "contexts").c_str());
 //     }
 // }
 
@@ -277,10 +278,10 @@ int yarp_context_main(int argc, char *argv[]) {
             rf.setVerbose(true);
         ResourceFinderOptions opts;
         opts.searchLocations=ResourceFinderOptions::Installed;
-        ConstString originalpath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
-        ConstString destDirname=rf.getDataHome() + PATH_SEPERATOR + "contexts" + PATH_SEPERATOR + contextName;
+        ConstString originalpath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
+        ConstString destDirname=rf.getDataHome() + PATH_SEPARATOR + "contexts" + PATH_SEPARATOR + contextName;
         //tmp:
-        ConstString hiddenDirname=rf.getDataHome() + PATH_SEPERATOR + ".contexts" + PATH_SEPERATOR + contextName;
+        ConstString hiddenDirname=rf.getDataHome() + PATH_SEPARATOR + ".contexts" + PATH_SEPARATOR + contextName;
         prepareHomeFolder(rf, CONTEXTS);
         if (importArg.size() >2 )
         {
@@ -293,8 +294,8 @@ int yarp_context_main(int argc, char *argv[]) {
                 ConstString fileName=importArg.get(i).asString();
                 if(fileName != "")
                 {
-                    ok = (recursiveCopy(originalpath+ PATH_SEPERATOR + fileName, destDirname + PATH_SEPERATOR + fileName) >=0 ) && ok;
-                    ok = ok && (recursiveCopy(originalpath+ PATH_SEPERATOR + fileName, hiddenDirname + PATH_SEPERATOR + fileName) >=0 );
+                    ok = (recursiveCopy(originalpath+ PATH_SEPARATOR + fileName, destDirname + PATH_SEPARATOR + fileName) >=0 ) && ok;
+                    ok = ok && (recursiveCopy(originalpath+ PATH_SEPARATOR + fileName, hiddenDirname + PATH_SEPARATOR + fileName) >=0 );
                 }
             }
             if (ok)
@@ -319,7 +320,7 @@ int yarp_context_main(int argc, char *argv[]) {
             else
             {
                 printf("Copied context %s from %s to %s .\nCurrent locations for this context:\n", contextName.c_str(), originalpath.c_str(), destDirname.c_str());
-                yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str());
+                yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str());
                 for (int curCont=0; curCont<paths.size(); ++curCont)
                     printf("%s\n", paths.get(curCont).asString().c_str());
             }
@@ -355,13 +356,13 @@ int yarp_context_main(int argc, char *argv[]) {
                 if( name != "." && name != "..")
                 {
                     ACE_stat statbuf;
-                    ConstString originalpath=curPath + PATH_SEPERATOR + name;
+                    ConstString originalpath=curPath + PATH_SEPARATOR + name;
                     YARP_stat(originalpath.c_str(), &statbuf);
                     if ((statbuf.st_mode & S_IFMT)== S_IFDIR)
                     {
-                        ConstString destDirname=rf.getDataHome() + PATH_SEPERATOR + "contexts" + PATH_SEPERATOR + name;
+                        ConstString destDirname=rf.getDataHome() + PATH_SEPARATOR + "contexts" + PATH_SEPARATOR + name;
                         recursiveCopy(originalpath, destDirname);
-                        ConstString hiddenDirname=rf.getDataHome() + PATH_SEPERATOR + ".contexts" + PATH_SEPERATOR + name;
+                        ConstString hiddenDirname=rf.getDataHome() + PATH_SEPARATOR + ".contexts" + PATH_SEPARATOR + name;
                         recursiveCopy(originalpath, hiddenDirname);// TODO: check result!
                     }
                 }
@@ -371,7 +372,7 @@ int yarp_context_main(int argc, char *argv[]) {
         }
 
         printf("New user contexts:\n");
-        printContentDirs(rf.getDataHome() + PATH_SEPERATOR + "contexts");
+        printContentDirs(rf.getDataHome() + PATH_SEPARATOR + "contexts");
         return 0;
     }
 
@@ -389,7 +390,7 @@ int yarp_context_main(int argc, char *argv[]) {
             rf.setVerbose(true);
         ResourceFinderOptions opts;
         opts.searchLocations=ResourceFinderOptions::User;
-        ConstString targetPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+        ConstString targetPath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
         if (targetPath=="")
         {
             printf("Could not find context %s !\n", contextName.c_str());
@@ -408,7 +409,7 @@ int yarp_context_main(int argc, char *argv[]) {
                 else
                     printf("Removed folder %s\n", targetPath.c_str());
                 //remove hidden folder:
-                ConstString hiddenPath=   rf.findPath((ConstString(".contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+                ConstString hiddenPath=   rf.findPath((ConstString(".contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
                 if (hiddenPath != "")
                     recursiveRemove(hiddenPath.c_str());
                 return result;
@@ -432,7 +433,7 @@ int yarp_context_main(int argc, char *argv[]) {
         yarp::os::ResourceFinder rf;
         if (options.check("verbose"))
             rf.setVerbose(true);
-        yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str());
+        yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str());
         for (int curCont=0; curCont<paths.size(); ++curCont)
             printf("%s\n", paths.get(curCont).asString().c_str());
         return 0;
@@ -449,7 +450,7 @@ int yarp_context_main(int argc, char *argv[]) {
 //         yarp::os::ResourceFinder rf;
 //         if (options.check("verbose"))
 //             rf.setVerbose(true);
-//         yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str());
+//         yarp::os::Bottle paths=rf.findPaths((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str());
 //         std::vector<std::string> fileList;
 //         for (int curCont=0; curCont<paths.size(); ++curCont)
 //         {
@@ -474,10 +475,10 @@ int yarp_context_main(int argc, char *argv[]) {
 
         ResourceFinderOptions opts;
         opts.searchLocations=ResourceFinderOptions::User;
-        ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+        ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
 
         opts.searchLocations=ResourceFinderOptions::Installed;
-        ConstString installedPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+        ConstString installedPath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
 
         recursiveDiff(installedPath, userPath);
         return 0;
@@ -499,10 +500,10 @@ int yarp_context_main(int argc, char *argv[]) {
                 ostream tmp(0);
                 opts.searchLocations=ResourceFinderOptions::User;
                 rf.setQuiet();
-                ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +(*subDirIt)).c_str(), opts);
+                ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +(*subDirIt)).c_str(), opts);
                 if (userPath == "")
                     continue;
-                if ( recursiveDiff(installedPath + PATH_SEPERATOR + (*subDirIt), userPath, tmp)>0)
+                if ( recursiveDiff(installedPath + PATH_SEPARATOR + (*subDirIt), userPath, tmp)>0)
                     std::cout<< (*subDirIt) <<std::endl;
             }
         }
@@ -533,12 +534,12 @@ int yarp_context_main(int argc, char *argv[]) {
                 {
                     ResourceFinderOptions opts;
                     opts.searchLocations=ResourceFinderOptions::User;
-                    ConstString userFileName=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName + PATH_SEPERATOR + fileName).c_str(), opts);
+                    ConstString userFileName=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName + PATH_SEPARATOR + fileName).c_str(), opts);
 
-                    ConstString hiddenFileName=rf.findPath((ConstString(".contexts") + PATH_SEPERATOR +contextName+ PATH_SEPERATOR + fileName).c_str(), opts);
+                    ConstString hiddenFileName=rf.findPath((ConstString(".contexts") + PATH_SEPARATOR +contextName+ PATH_SEPARATOR + fileName).c_str(), opts);
 
                     opts.searchLocations=ResourceFinderOptions::Installed;
-                    ConstString installedFileName=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName+ PATH_SEPERATOR + fileName).c_str(), opts);
+                    ConstString installedFileName=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName+ PATH_SEPARATOR + fileName).c_str(), opts);
 
                     if (userFileName!="" && hiddenFileName != "" && installedFileName !="")
                         fileMerge(installedFileName, userFileName, hiddenFileName);
@@ -553,12 +554,12 @@ int yarp_context_main(int argc, char *argv[]) {
         {
             ResourceFinderOptions opts;
             opts.searchLocations=ResourceFinderOptions::User;
-            ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+            ConstString userPath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
 
-            ConstString hiddenUserPath=rf.findPath((ConstString(".contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+            ConstString hiddenUserPath=rf.findPath((ConstString(".contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
 
             opts.searchLocations=ResourceFinderOptions::Installed;
-            ConstString installedPath=rf.findPath((ConstString("contexts") + PATH_SEPERATOR +contextName).c_str(), opts);
+            ConstString installedPath=rf.findPath((ConstString("contexts") + PATH_SEPARATOR +contextName).c_str(), opts);
 
             recursiveMerge(installedPath, userPath, hiddenUserPath);
         }
