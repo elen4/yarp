@@ -68,6 +68,9 @@ macro(YARP_CONFIGURE_EXTERNAL_INSTALLATION _name)
     set(${_NAME}_APPLICATIONS_TEMPLATES_INSTALL_DIR ${${_NAME}_DATA_INSTALL_DIR}/templates/applications CACHE INTERNAL "application templates' installation directory for ${_name} (relative to build/installation dir")
     set(${_NAME}_MODULES_TEMPLATES_INSTALL_DIR ${${_NAME}_DATA_INSTALL_DIR}/templates/modules CACHE INTERNAL "module templates' installation directory for ${_name} (relative to build/installation dir")
     set(${_NAME}_ROBOTS_INSTALL_DIR  ${${_NAME}_DATA_INSTALL_DIR}/robots CACHE INTERNAL "robot-specific configurations installation directory for ${_name} (relative to build/installation dir")
+
+#Adding custom target to force copy
+    add_custom_target(yarp_install_copy)
 endmacro()
 
 # This macro has the same signature as CMake "install" command (i.e., with DESTINATION and FILES/DIRECTORY arguments); in addition to calling the "install" command,
@@ -75,6 +78,11 @@ endmacro()
 macro(YARP_INSTALL)
    cmake_parse_arguments(currentTarget "" "DESTINATION;COMPONENT" "FILES;DIRECTORY" ${ARGN})
    install(${ARGN})
+   foreach(currentFile ${currentTarget_FILES} ${currentTarget_DIRECTORY})
+      add_custom_command(TARGET yarp_install_copy
+                     COMMAND ${CMAKE_COMMAND} -E
+                         copy ${currentFile} ${CMAKE_BINARY_DIR}/${currentTarget_DESTINATION}/${currentFile})
+   endforeach()
    file(COPY ${currentTarget_FILES} ${currentTarget_DIRECTORY} DESTINATION ${CMAKE_BINARY_DIR}/${currentTarget_DESTINATION})
 endmacro()
 
