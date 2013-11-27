@@ -2,12 +2,12 @@
 # Authors: Paul Fitzpatrick
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 
-get_target_property(yarpidl_thrift yarpidl_thrift LOCATION)
+#get_target_property(yarpidl_thrift yarpidl_thrift LOCATION)
 set(tests ${CMAKE_CURRENT_SOURCE_DIR})
 set(outs ${CMAKE_CURRENT_BINARY_DIR})
 
 macro(add_gen_test name)
-  add_test(${name} ${yarpidl_thrift} -out ${outs} --gen yarp ${ARGN})
+  add_test(${name} yarpidl_thrift -out ${outs} --gen yarp ${ARGN})
 endmacro()
 
 macro(add_config_test name dir)

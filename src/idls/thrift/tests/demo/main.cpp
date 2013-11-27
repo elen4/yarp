@@ -91,6 +91,18 @@ public:
         if (param.asString()=="6*7") return 42;
         return 9;
     }
+
+    virtual yarp::os::Bottle wannaBottle() {
+        yarp::os::Bottle greet;
+        Bottle& hello=greet.addList();
+        hello.addString("hello");
+        hello.addString("world");
+        Bottle& how=greet.addList();
+        how.addString("I am");
+        how.addInt(42);
+        printf("Sending out bottle: %s\n", greet.toString().c_str());
+        return greet;
+    }
 };
 
 
@@ -497,6 +509,14 @@ bool test_wrapping() {
     x = client.check(Value("test"));
     printf("Result %d\n", x);
     if (x!=9) return false;
+    Bottle answer=client.wannaBottle();
+    printf("Bottle is %s\n", answer.toString().c_str()); fflush(stdout);
+    if (answer.size()!=2)
+        return false;
+    if (answer.get(0).asList()->get(0).asString() !="hello")
+        return false;
+    if (answer.get(1).asList()->get(1).asInt() != 42)
+        return false;
 
     return true;
 }
