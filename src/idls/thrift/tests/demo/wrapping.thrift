@@ -10,7 +10,6 @@ struct WrapValue
 
 struct WrapBottle
 {
-  1: list< list<double> > content;
 }
 (
   yarp.name = "yarp::os::Bottle"
