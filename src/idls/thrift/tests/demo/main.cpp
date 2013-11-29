@@ -518,6 +518,21 @@ bool test_wrapping() {
     if (answer.get(1).asList()->get(1).asInt() != 42)
         return false;
 
+    RpcClient client_port2;
+    client_port2.open("/client2");
+    yarp.connect(client_port2.getName(),server_port.getName());
+    Bottle cmd;
+    cmd.addString("wannaBottle");
+    client_port2.write(cmd, answer);
+
+    printf("Now bottle is %s\n", answer.toString().c_str()); fflush(stdout);
+    if (answer.size()!=2)
+        return false;
+    if (answer.get(0).asList()->get(0).asString() !="hello")
+        return false;
+    if (answer.get(1).asList()->get(1).asInt() != 42)
+        return false;
+
     return true;
 }
 
