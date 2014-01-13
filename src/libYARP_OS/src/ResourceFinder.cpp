@@ -598,6 +598,15 @@ public:
                 if (justTop) return;
             }
             ConstString str = check(getPwd(),resourceType,"",name,isDir,doc,"pwd");
+            if (str=="") {
+                int i=0;
+                while (str=="" && i<apps.size()) {
+                    ConstString app = apps.get(i).asString();
+                    str = check(getPwd(),resourceType,app.c_str(),name,isDir,doc,"pwd+context");
+                    ++i;
+                }
+            }
+
             if (str!="") {
                 if (mainActive) useNearMain = true;
                 addString(output,str);
