@@ -376,6 +376,14 @@ public:
 
     bool setDefault(Property& config, const char *key, const char *val) {
         if (!config.check(key)) {
+            Value* val2=Value::makeValue(val);
+            config.put(key,val2);
+        }
+        return true;
+    }
+
+    bool setDefault(Property& config, const char *key, const yarp::os::Value &val) {
+        if (!config.check(key)) {
             config.put(key,val);
         }
         return true;
@@ -990,6 +998,9 @@ bool ResourceFinder::clearContext() {
 }
 
 bool ResourceFinder::setDefault(const char *key, const char *val) {
+    return HELPER(implementation).setDefault(config,key,val);
+}
+bool ResourceFinder::setDefault(const char *key, const yarp::os::Value& val) {
     return HELPER(implementation).setDefault(config,key,val);
 }
 

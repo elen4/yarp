@@ -121,6 +121,7 @@ public:
     }
 
     bool setDefault(const char *key, const char *val);
+    bool setDefault(const char *key, const yarp::os::Value& val);
 
     bool setDefaultConfigFile(const char *fname) {
         return setDefault("from",fname);
