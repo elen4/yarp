@@ -212,12 +212,14 @@ public:
         ResourceFinder rf;
         rf.setDefault("int", defInt);
         rf.setDefault("double", defDouble);
-        rf.setDefault("string", defString.c_str());
-        rf.setDefault("list", defList.toString().c_str());
+        rf.setDefault("string", defString);
+        rf.setDefault("constchar", defString.c_str());
+        rf.setDefault("list", defList.toString());
         rf.configure(argc,(char **)argv);
         checkEqual(rf.find("int").asInt(), defInt, "default integer set correctly");
         checkEqual(rf.find("double").asDouble(), defDouble, "default double set correctly");
         checkEqual(rf.find("string").asString(), defString, "default string set correctly");
+        checkEqual(rf.find("constchar").asString(), defString, "default string (passed as const char*) set correctly");
         Bottle *foundList=rf.find("list").asList();
         if(foundList!=NULL)
             checkEqual(rf.find("list").asList()->get(0).asString(), "answers", "default list set correctly");
