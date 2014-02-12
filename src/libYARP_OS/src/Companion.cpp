@@ -237,7 +237,7 @@ static String getStdin() {
         txt = szLine;
         add_history(szLine);
     }
-    else
+    else if (!szLine)
         readlineEOF=true;
 #else
 
