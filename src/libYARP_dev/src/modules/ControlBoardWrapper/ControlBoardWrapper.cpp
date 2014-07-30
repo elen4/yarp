@@ -11,6 +11,7 @@
 #include "StreamingMessagesParser.h"
 #include "RPCMessagesParser.h"
 #include <iostream>
+#include <sstream>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -62,6 +63,15 @@ bool ControlBoardWrapper::close()
         delete subDeviceOwned;
         subDeviceOwned = NULL;
     }
+
+#if defined(ROS_MSG)
+    if(rosNode != NULL)
+    {
+        rosNode;
+        delete rosNode;
+        rosNode = NULL;
+    }
+#endif
     return closeMain();
 }
 
@@ -92,7 +102,9 @@ bool ControlBoardWrapper::closeMain()
     inputRPCPort.close();
     inputStreamingPort.close();
     outputPositionStatePort.close();
-
+#if defined(YARP_MSG)
+    extendedOutputStatePort.close();
+#endif
     return true;
 }
 
@@ -111,6 +123,7 @@ bool ControlBoardWrapper::open(Searchable& config)
     Property prop;
     prop.fromString(config.toString().c_str());
 
+    std::cout << "Wrapper params \n " << config.toString() << std::endl;
     _verb = (prop.check("verbose","if present, give detailed output"));
     if (_verb)
         cout<<"running with verbose output\n";
@@ -175,6 +188,25 @@ bool ControlBoardWrapper::open(Searchable& config)
     inputRPCPort.open((rootName+"/rpc:i").c_str());
     inputStreamingPort.open((rootName+"/command:i").c_str());
     outputPositionStatePort.open((rootName+"/state:o").c_str());
+
+    // new extended output state port
+#ifdef YARP_MSG
+    extendedOutputState_buffer.attach(extendedOutputStatePort);
+    extendedOutputStatePort.open((rootName+"/stateExt:o").c_str());
+#endif
+
+
+#ifdef ROS_MSG
+    rosNode = new yarp::os::Node( (rootName+"/rosPublisher").c_str());   // added a Node
+
+    if (!rosPublisherPort.topic(rootName+"/ROS_jointState" ) )
+     {
+        cerr << "Error opening " << (rootName+"/ROS_jointState").c_str() << " port, check your yarp network\n";
+        return false;
+     }
+    else
+        cout << "\n\n ROS " << (rootName+"/ROS_jointState").c_str() << " opened succesfully!!\n\n" << std::endl;
+#endif
 
     return true;
 }
@@ -468,6 +500,55 @@ void ControlBoardWrapper::run()
 
     outputPositionStatePort.setEnvelope(time);
     outputPositionState_buffer.write();
+
+    static int loopCounting = 0;
+
+/* if both are set to on, we can use the class generated from ros.msg file both
+ *for yarp port and ros topic */
+#if defined(YARP_MSG) && defined(ROS_MSG)
+    jointState &test = extendedOutputState_buffer.get();
+#endif
+
+#if defined(YARP_MSG) && !defined(ROS_MSG)
+    jointData &test = extendedOutputState_buffer.get();
+#endif
+
+
+#if !defined(YARP_MSG) && defined(ROS_MSG)
+    jointState test;
+#endif
+
+
+#if !defined(YARP_MSG) && !defined(ROS_MSG)
+    // nothing to do in this case.
+#endif
+
+#if defined(YARP_MSG) || defined(ROS_MSG)
+    test.name.resize(controlledJoints);
+    test.position.resize(controlledJoints);
+    test.velocity.resize(controlledJoints);
+    test.effort.resize(controlledJoints);
+
+    for(int i=0; i<controlledJoints; i++)
+    {
+        std::stringstream ss;
+        ss << " pippo " << i;
+
+        test.name[i] = std::string(ss.str() );
+        test.position[i] = 10000 + loopCounting;
+        test.velocity[i] = 20000 + loopCounting/2.0f;
+        test.effort[i]   = 30000 + loopCounting^2;
+    }
+#endif
+
+#ifdef YARP_MSG  // both yarp and yarp+ros
+    extendedOutputState_buffer.write();
+#endif
+
+#if defined(ROS_MSG)
+    rosPublisherPort.write(test);
+#endif
+    loopCounting++;
 }
 
 //
@@ -1818,7 +1899,6 @@ bool ControlBoardWrapper::getRefAccelerations(double *accs) {
         int subIndex=device.lut[l].deviceEntry;
 
         yarp::dev::impl::SubDevice *p=device.getSubdevice(subIndex);
-        fprintf(stdout, "running with verbose output\n");
 
         if (!p)
             return false;

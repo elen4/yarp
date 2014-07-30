@@ -33,9 +33,28 @@
 #include <string>
 #include <vector>
 
+//#define ROS_MSG
+////#undef  ROS_MSG
+
+//#define YARP_MSG
+//#undef  YARP_MSG
+
+#ifdef YARP_MSG
+#include "jointData.h"
+#endif
+
+#ifdef ROS_MSG
+#include "jointState.h"
+#endif
+
 #include "StreamingMessagesParser.h"
 #include "RPCMessagesParser.h"
 #include "SubDevice.h"
+
+// ROS state publisher
+#include <yarp/os/Node.h>
+#include <yarp/os/Publisher.h>
+
 
 #ifdef MSVC
     #pragma warning(disable:4355)
@@ -106,11 +125,43 @@ private:
     yarp::os::Stamp time;                       // envelope to attach to the state port
     yarp::os::Semaphore timeMutex;
 
-    yarp::os::PortWriterBuffer<yarp::sig::Vector> outputPositionState_buffer;       // Buffer associated to the outputPositionStatePort port
-    yarp::os::PortReaderBuffer<CommandMessage> inputStreaming_buffer;               // Buffer associated to the inputStreamingPort port
-    yarp::os::PortReaderBuffer<yarp::os::Bottle> inputRPC_buffer;                   // Buffer associated to the inputRPCPort port
-    yarp::dev::impl::RPCMessagesParser RPC_parser;                                  // Message parser associated to the inputRPCPort port
-    yarp::dev::impl::StreamingMessagesParser streaming_parser;                      // Message parser associated to the inputStreamingPort port
+    yarp::os::PortWriterBuffer<yarp::sig::Vector>   outputPositionState_buffer;     // Buffer associated to the outputPositionStatePort port
+
+#if defined(YARP_MSG) && defined(ROS_MSG)
+    // Buffer associated to the extendedOutputStatePort port; in this case we will use the type generated
+    // from the ROS .msg file
+    yarp::os::PortWriterBuffer<jointState>           extendedOutputState_buffer;
+    yarp::os::Publisher<jointState>  rosPublisherPort;  // changed Port to Publisher
+    yarp::os::Port extendedOutputStatePort;     // Port /stateExt:o streaming out the encoder positions
+    // ROS state publisher
+    yarp::os::Node *rosNode;   // added a Node
+#endif
+
+#if defined(YARP_MSG) && ! defined(ROS_MSG)
+    // Buffer associated to the extendedOutputStatePort port; in this case we will use the type generated
+    // from the YARP .thrift file
+    yarp::os::PortWriterBuffer<jointData>           extendedOutputState_buffer;
+    yarp::os::Port extendedOutputStatePort;     // Port /stateExt:o streaming out the encoder positions
+#endif
+
+
+#if ! defined(YARP_MSG) && defined(ROS_MSG)
+    // ROS state publisher
+    yarp::os::Node *rosNode;   // added a Node
+    yarp::os::PortWriterBuffer<jointState>           extendedOutputState_buffer;     // Buffer associated to the extendedOutputStatePort port
+    yarp::os::Publisher<jointState>  rosPublisherPort;  // changed Port to Publisher
+#endif
+
+
+#if !defined(YARP_MSG) && !defined(ROS_MSG)
+    // nothing to do in this case
+#endif
+
+
+    yarp::os::PortReaderBuffer<CommandMessage>      inputStreaming_buffer;          // Buffer associated to the inputStreamingPort port
+    yarp::os::PortReaderBuffer<yarp::os::Bottle>    inputRPC_buffer;                // Buffer associated to the inputRPCPort port
+    yarp::dev::impl::RPCMessagesParser              RPC_parser;                     // Message parser associated to the inputRPCPort port
+    yarp::dev::impl::StreamingMessagesParser        streaming_parser;               // Message parser associated to the inputStreamingPort port
 
     yarp::sig::Vector   CBW_encoders;
     std::string         partName;               // to open ports and debug messages
