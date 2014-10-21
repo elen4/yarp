@@ -9,6 +9,7 @@ yarp_configure_external_installation(yarp)
 add_subdirectory(libYARP_OS)
 add_subdirectory(libYARP_sig)
 add_subdirectory(libYARP_math)
+add_subdirectory(idls)
 add_subdirectory(libYARP_dev)
 add_subdirectory(modules)
 
@@ -18,7 +19,6 @@ link_directories(${YARP_TREE_LINK_DIRS})
 
 add_subdirectory(carriers)
 
-add_subdirectory(idls)
 
 add_subdirectory(libYARP_name)
 add_subdirectory(libYARP_init)

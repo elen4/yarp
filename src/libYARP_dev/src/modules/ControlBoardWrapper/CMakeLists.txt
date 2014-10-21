@@ -8,8 +8,8 @@ if(CBW2_USE_YARP_THRIFT)
 
     set(thrifFile stateExt)
     ## Load yarp stuff
-    find_package(YARP REQUIRED)     ## make cmake look for yarp
-    list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})  ## add path of the yarp-cmake files full of wonderful macros
+ #   find_package(YARP REQUIRED)     ## make cmake look for yarp
+#    list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})  ## add path of the yarp-cmake files full of wonderful macros
     include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})  ## include yarp header files
 
     include(YarpIDL)    ## wa want to use IDL so include their macros
